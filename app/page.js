@@ -24,16 +24,23 @@ export default function Home() {
   const [inventory, setInventory] = useState([]);
   const [open, setOpen] = useState(false);
   const [itemName, setItemName] = useState("");
+  const [searchQuery, setSearchQuery] = useState(""); // holds search input
 
   const updateInventory = async () => {
     const snapshot = query(collection(firestore, "inventory"));
     const docs = await getDocs(snapshot);
     const inventoryList = [];
+
     docs.forEach((doc) => {
-      inventoryList.push({
+      const itemData = {
         name: doc.id,
         ...doc.data(),
-      });
+      };
+
+      // apply search filter
+      if (itemData.name.toLowerCase().includes(searchQuery.toLowerCase())){
+        inventoryList.push(itemData);
+      }
     });
     setInventory(inventoryList);
   };
@@ -70,7 +77,7 @@ export default function Home() {
 
   useEffect(() => {
     updateInventory();
-  }, []);
+  }, [searchQuery]);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -90,7 +97,7 @@ export default function Home() {
           position="absolute"
           top="50%"
           left="50%"
-          width={400}
+          width={500}
           bgcolor="white"
           border="2px solid #000"
           boxShadow={24}
@@ -112,6 +119,22 @@ export default function Home() {
                 setItemName(e.target.value);
               }}
             />
+            {/* <Button
+              variant="outlined"
+              onClick={() => {
+                addItem(itemName);
+              }}
+            >
+              +1
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => {
+                removeItem(itemName);
+              }}
+            >
+              -1
+            </Button> */}
             <Button
               variant="outlined"
               onClick={() => {
@@ -125,14 +148,22 @@ export default function Home() {
           </Stack>
         </Box>
       </Modal>
-      <Button
-        variant="contained"
-        onClick={() => {
-          handleOpen();
-        }}
-      >
-        Add New Item
-      </Button>
+      <Stack direction="row" spacing={2}>
+        <TextField
+          variant="outlined"
+          placeholder="Search for an Item..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <Button
+          variant="contained"
+          onClick={() => {
+            handleOpen();
+          }}
+        >
+          Add New Item
+        </Button>
+      </Stack>
       <Box border="1px solid #333">
         <Box
           width="800px"
@@ -159,10 +190,10 @@ export default function Home() {
               bgColor="#f0f0f0"
               padding={5}
             >
-              <Typography variant="h3" color="#333" textAlign="center">
+              <Typography variant="h3" color="#333" textAlign="left" flex="1">
                 {name.charAt(0).toUpperCase() + name.slice(1)}
               </Typography>
-              <Typography variant="h3" color="#333" textAlign="center">
+              <Typography variant="h3" color="#333" textAlign="center" flex="1">
                 {quantity}
               </Typography>
               <Stack direction="row" spacing={2}>
