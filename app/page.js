@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { firestore } from "@/firebase";
+import { db } from "@/firebase";
 import {
   Box,
   Modal,
@@ -20,6 +20,18 @@ import {
   setDoc,
 } from "firebase/firestore";
 
+const testFirestore = async () => {
+  try {
+    const snapshot = await getDocs(collection(db, 'inventory'));
+    console.log('Connected to Firestore. Documents:', snapshot.docs.map(doc => doc.data()));
+  } catch (error) {
+    console.error('Firestore connection failed:', error);
+  }
+};
+
+testFirestore();
+
+
 export default function Home() {
   const [inventory, setInventory] = useState([]);
   const [open, setOpen] = useState(false);
@@ -27,7 +39,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState(""); // holds search input
 
   const updateInventory = async () => {
-    const snapshot = query(collection(firestore, "inventory"));
+    const snapshot = query(collection(db, "inventory"));
     const docs = await getDocs(snapshot);
     const inventoryList = [];
 
@@ -46,7 +58,7 @@ export default function Home() {
   };
 
   const addItem = async (item) => {
-    const docRef = doc(collection(firestore, "inventory"), item);
+    const docRef = doc(collection(db, "inventory"), item);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
@@ -60,7 +72,7 @@ export default function Home() {
   };
 
   const removeItem = async (item) => {
-    const docRef = doc(collection(firestore, "inventory"), item);
+    const docRef = doc(collection(db, "inventory"), item);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
